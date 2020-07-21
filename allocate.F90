@@ -1,0 +1,82 @@
+subroutine AllocateMemory()
+use vars
+implicit none
+    integer::nGrid   
+
+    write(logFile,*) cpuIdx,".log"
+    logFile = "./DEM/log/"//trim(adjustl(logFile))
+
+    nGrid = (nx+2*lap)*(ny+2*lap)*(nz+2*lap)
+    allocate(  xc(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(  yc(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(  zc(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(GlobalCellIndex(sg1:eg1,sg2:eg2,sg3:eg3))
+    allocate(GlobalNeighCellIndex(1:6,sg1:eg1,sg2:eg2,sg3:eg3))
+
+    allocate(   u(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(   v(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(   w(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(   P(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(TIux(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(TIuy(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(TIuz(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(TIvx(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(TIvy(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(TIvz(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(TIwx(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(TIwy(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(TIwz(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(TVux(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(TVuy(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(TVuz(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(TVvx(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(TVvy(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(TVvz(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(TVwx(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(TVwy(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(TVwz(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(  Px(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(  Py(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(  Pz(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(  fx(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(  fy(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(  fz(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(omegaX(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(omegaY(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(omegaZ(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(errorU(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(errorV(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(errorW(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(errorP(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(fxOld(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(fyOld(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(fzOld(lg1:ug1,lg2:ug2,lg3:ug3))
+
+    allocate(pCorr1D(1:nx*ny*nz))
+    allocate(Pcorr(lg1:ug1,lg2:ug2,lg3:ug3))   
+    allocate(velDiv(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(RHSu(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(RHSv(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(RHSw(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(RHSul(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(RHSvl(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(RHSwl(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(uold(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(vold(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(wold(lg1:ug1,lg2:ug2,lg3:ug3))
+
+    allocate(cellIdx3Dto1D(lg1:ug1,lg2:ug2,lg3:ug3))
+    allocate(cellIdx1Dto3D(1:3,1:nGrid))
+    
+    allocate(fromGlobalIdx(0:nx*ny*nz-1),toLocalIdx(0:nx*ny*nz-1))
+
+    maxSendNoFluid = 0
+    maxSendNoFluid = max(maxSendNoFluid,(nx+2*lap)*(ny+2*lap))
+    maxSendNoFluid = max(maxSendNoFluid,(nx+2*lap)*(nz+2*lap))
+    maxSendNoFluid = max(maxSendNoFluid,(nz+2*lap)*(ny+2*lap))
+    maxSendNoFluid = lap*maxSendNoFluid
+    allocate(recvCntFluid(1:6),sendCntFluid(1:6))
+    allocate(recvIdxFluid(1:maxSendNoFluid,1:6),sendIdxFluid(1:maxSendNoFluid,1:6))
+    allocate(recvBuffFluid(1:10*maxSendNoFluid),sendBuffFluid(1:10*maxSendNoFluid))
+return
+endsubroutine
